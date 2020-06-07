@@ -1,5 +1,6 @@
 package gui;
 
+import approval.model.ApprovalReply;
 import client.model.TravelRefundRequest;
 import gateway.TravelRequestListener;
 
@@ -53,11 +54,11 @@ public class TravelRefundBrokerApp extends JFrame {
         refundRequestReplyListModel.addElement(refundRequestReply);
     }
 
-//    public void updateRequestOffer(BankInterestReply interestReply, String correlationId) {
-//        RequestOffer requestOffer = cache.get(correlationId);
-//        requestOffer.setBankInterestReply(interestReply);
-//        // GUI should be refreshed?
-//    }
+    public void updateRequestOffer(ApprovalReply approvalReply, String correlationId) {
+        RefundRequestReply refundRequestReply = cache.get(correlationId);
+        refundRequestReply.setApprovalReply(approvalReply);
+        // GUI should be refreshed?
+    }
 
     public static void main(String[] args) {
         TravelRefundBrokerApp travelRefundBrokerApp = new TravelRefundBrokerApp("Travel Refund Broker Application");

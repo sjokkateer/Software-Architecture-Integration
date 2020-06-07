@@ -12,6 +12,8 @@ public class ApprovalRequest {
     private String student;
     private double costs;
    // private ApprovalTravelMode travelMode;
+    private String id;
+
 
     public ApprovalRequest() {
         super();
@@ -26,6 +28,20 @@ public class ApprovalRequest {
         setTeacher(student);
         setCosts(costs);
        // setTravelMode(mode);
+    }
+
+
+    public ApprovalRequest(String teacher, String student, double costs, String id) {
+        this(teacher, student, costs);
+        setId(id);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTeacher() {

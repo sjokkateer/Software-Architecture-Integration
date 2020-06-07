@@ -11,6 +11,10 @@ public class RefundRequestReply {
         this.travelRefundRequest = travelRefundRequest;
     }
 
+    public void setApprovalReply(ApprovalReply approvalReply) {
+        this.approvalReply = approvalReply;
+    }
+
     @Override
     public String toString() {
         return travelRefundRequest.toString() + "  --->  " + ((approvalReply !=null)? approvalReply.toString() : "waiting for approval reply...");

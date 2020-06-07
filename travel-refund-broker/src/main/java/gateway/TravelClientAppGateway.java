@@ -10,11 +10,10 @@ public class TravelClientAppGateway {
     private Gson gson = new Gson();
 
     private ConcreteMessageReceiverGateway messageReceiverGatewayClient;
-    private MessageSenderGateway messageSenderGatewayClient;
 
     private TravelRequestListener travelRequestListener;
 
-    // So why not store the destination queue here by message id?
+    // Is used to determine the destination queue to return back to, based on message/correlationId
     HashMap<String, Destination> messageIdReturnAddress;
 
     public TravelClientAppGateway() {
@@ -29,7 +28,6 @@ public class TravelClientAppGateway {
                     TravelRefundRequest travelRefundRequest = gson.fromJson(messageContent, TravelRefundRequest.class);
 
                     messageIdReturnAddress.put(message.getJMSMessageID(), message.getJMSReplyTo());
-                    System.out.println(travelRefundRequest);
 
                     if (travelRequestListener != null) {
                         travelRequestListener.onRequestReceived(travelRefundRequest, message.getJMSMessageID());

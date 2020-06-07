@@ -1,5 +1,7 @@
 package approval.gui;
 
+import approval.ApprovalRequestListener;
+import approval.TravelApprovalAppGateway;
 import approval.model.ApprovalReply;
 import approval.model.ApprovalRequest;
 import javafx.fxml.FXML;
@@ -25,8 +27,21 @@ public class ApprovalController implements Initializable {
 
     private final String approvalName;
 
+    private TravelApprovalAppGateway travelApprovalAppGateway;
+
     public ApprovalController(String approvalAppName, String approvalRequestQueue) {
         this.approvalName = approvalAppName;
+        travelApprovalAppGateway = new TravelApprovalAppGateway(approvalRequestQueue);
+
+        // Inject piece of code instructing what to do when we receive an approval request.
+        travelApprovalAppGateway.setApprovalRequestListener(new ApprovalRequestListener() {
+            @Override
+            public void onRequestReceived(ApprovalRequest approvalRequest) {
+                ApprovalListLine rr = new ApprovalListLine(approvalRequest);
+                lvRequestReply.getItems().add(rr);
+                lvRequestReply.refresh();
+            }
+        });
     }
 
     private void sendApprovalReply() {
@@ -44,6 +59,8 @@ public class ApprovalController implements Initializable {
             ApprovalRequest request = rr.getRequest();
 
             // @TODO: send reply for the selected request
+
+            travelApprovalAppGateway.sendApprovalReply(reply, request.getId());
         }
     }
 
