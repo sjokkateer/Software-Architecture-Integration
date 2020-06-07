@@ -10,6 +10,8 @@ import gateway.TravelClientAppGateway;
 import gateway.TravelRequestListener;
 import routing.TravelRefundContentEnricher;
 
+import java.util.HashMap;
+
 public class TravelRefundBrokerController {
     private TravelClientAppGateway travelClientAppGateway;
     private TravelRequestListener travelRequestListener;
@@ -19,7 +21,11 @@ public class TravelRefundBrokerController {
     private TravelApprovalAppGateway travelApprovalAppGateway;
     private ApprovalReplyListener approvalReplyListener;
 
+    private HashMap<String, TravelRefundRequest> cache;
+
     public TravelRefundBrokerController() {
+        cache = new HashMap<>();
+
         travelRefundContentEnricher = new TravelRefundContentEnricher();
 
         travelClientAppGateway = new TravelClientAppGateway();
@@ -27,6 +33,8 @@ public class TravelRefundBrokerController {
             @Override
             public void onRequestReceived(TravelRefundRequest travelRefundRequest, String originalMessageId) {
                 travelRefundRequest = travelRefundContentEnricher.enrich(travelRefundRequest);
+                // Cache the originally enriched travel refund request such that we can obtain the price later on.
+                cache.put(originalMessageId, travelRefundRequest);
 
                 // Need to forward to recepient list that should determine to which queue(s) the approvalRequest is sent
 
@@ -52,6 +60,12 @@ public class TravelRefundBrokerController {
 
                 // Forwards the reply to the client through the client app gateway.
                 double costs = 0.0;
+                TravelRefundRequest originalRequest = cache.get(correlationId);
+
+                if (originalRequest != null) {
+                    costs = originalRequest.getCosts();
+                }
+
                 TravelRefundReply travelRefundReply = new TravelRefundReply(approvalReply.isApproved(), approvalReply.getReasonRejected(), costs);
                 travelClientAppGateway.sendReply(travelRefundReply, correlationId);
             }
