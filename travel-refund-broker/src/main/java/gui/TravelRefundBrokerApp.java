@@ -2,6 +2,7 @@ package gui;
 
 import approval.model.ApprovalReply;
 import client.model.TravelRefundRequest;
+import gateway.ApprovalReplyListener;
 import gateway.TravelRequestListener;
 
 import javax.swing.*;
@@ -40,12 +41,12 @@ public class TravelRefundBrokerApp extends JFrame {
             }
         });
 
-//        controller.setBankInterestReplyListener(new InterestReplyListener() {
-//            @Override
-//            public void onInterestReplyReceived(BankInterestReply interestReply, String correlationId) {
-//                updateRequestOffer(interestReply, correlationId);
-//            }
-//        });
+        controller.setApprovalReplyListener(new ApprovalReplyListener() {
+            @Override
+            public void onReplyReceived(ApprovalReply approvalReply, String correlationId) {
+                updateRefundRequest(approvalReply, correlationId);
+            }
+        });
     }
 
     public void updateRefundRequest(TravelRefundRequest travelRefundRequest, String originalMessageId) {
@@ -54,10 +55,11 @@ public class TravelRefundBrokerApp extends JFrame {
         refundRequestReplyListModel.addElement(refundRequestReply);
     }
 
-    public void updateRequestOffer(ApprovalReply approvalReply, String correlationId) {
+    public void updateRefundRequest(ApprovalReply approvalReply, String correlationId) {
         RefundRequestReply refundRequestReply = cache.get(correlationId);
         refundRequestReply.setApprovalReply(approvalReply);
-        // GUI should be refreshed?
+        applicationPanel.repaint();
+        applicationPanel.revalidate();
     }
 
     public static void main(String[] args) {

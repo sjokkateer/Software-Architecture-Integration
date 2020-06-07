@@ -59,7 +59,6 @@ public class ApprovalController implements Initializable {
             ApprovalRequest request = rr.getRequest();
 
             // @TODO: send reply for the selected request
-
             travelApprovalAppGateway.sendApprovalReply(reply, request.getId());
         }
     }

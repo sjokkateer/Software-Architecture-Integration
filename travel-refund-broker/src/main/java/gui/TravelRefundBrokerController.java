@@ -1,7 +1,9 @@
 package gui;
 
+import approval.model.ApprovalReply;
 import approval.model.ApprovalRequest;
 import client.model.TravelRefundRequest;
+import gateway.ApprovalReplyListener;
 import gateway.TravelApprovalAppGateway;
 import gateway.TravelClientAppGateway;
 import gateway.TravelRequestListener;
@@ -15,12 +17,12 @@ public class TravelRefundBrokerController {
 
     //
     private TravelApprovalAppGateway travelApprovalAppGateway;
+    private ApprovalReplyListener approvalReplyListener;
 
     public TravelRefundBrokerController() {
-        travelClientAppGateway = new TravelClientAppGateway();
         travelRefundContentEnricher = new TravelRefundContentEnricher();
-        travelApprovalAppGateway = new TravelApprovalAppGateway();
 
+        travelClientAppGateway = new TravelClientAppGateway();
         travelClientAppGateway.setTravelRequestListener(new TravelRequestListener() {
             @Override
             public void onRequestReceived(TravelRefundRequest travelRefundRequest, String originalMessageId) {
@@ -36,9 +38,27 @@ public class TravelRefundBrokerController {
                 }
             }
         });
+
+        travelApprovalAppGateway = new TravelApprovalAppGateway();
+        travelApprovalAppGateway.setApprovalReplyListener(new ApprovalReplyListener() {
+            @Override
+            public void onReplyReceived(ApprovalReply approvalReply, String correlationId) {
+                // Will update the GUI through a listener.
+                if (approvalReplyListener != null) {
+                    approvalReplyListener.onReplyReceived(approvalReply, correlationId);
+                }
+
+                // Forwards the reply to the client through the client app gateway.
+
+            }
+        });
     }
 
     public void setTravelRequestListener(TravelRequestListener travelRequestListener) {
         this.travelRequestListener = travelRequestListener;
+    }
+
+    public void setApprovalReplyListener(ApprovalReplyListener approvalReplyListener) {
+        this.approvalReplyListener = approvalReplyListener;
     }
 }
