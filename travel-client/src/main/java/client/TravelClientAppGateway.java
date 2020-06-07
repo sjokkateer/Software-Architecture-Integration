@@ -4,7 +4,6 @@ import client.model.TravelRefundReply;
 import client.model.TravelRefundRequest;
 import com.google.gson.Gson;
 import gateway.MessageReceiverDynamicQueue;
-import gateway.MessageReceiverGateway;
 import gateway.MessageSenderGateway;
 
 import javax.jms.JMSException;
@@ -17,32 +16,36 @@ public class TravelClientAppGateway {
     private MessageSenderGateway messageSenderGateway;
     // This is a gateway class, but will use temporary queues for return address pattern.
     private MessageReceiverDynamicQueue messageReceiverGateway;
+    private TravelRefundReplyListener travelRefundReplyListener;
 
     private Gson gson = new Gson();
     private HashMap<String, TravelRefundRequest> cache = new HashMap<>();
 
     public TravelClientAppGateway() {
         messageSenderGateway = new MessageSenderGateway("travel-refund-broker-request");
+
         messageReceiverGateway = new MessageReceiverDynamicQueue();
-//        messageReceiverGateway.setListener(new MessageListener() {
-//            @Override
-//            public void onMessage(Message message) {
-//                try {
-//                    TravelRefundRequest travelRefundRequest = cache.get(message.getJMSCorrelationID());
-//                    String trrJSON = ((TextMessage) message).getText();
-//                    TravelRefundReply travelRefundReply = gson.fromJson(trrJSON, TravelRefundReply.class);
-//
-//                    // loanReplyListener.onReplyReceived(loanRequest, loanReply);
-//                } catch (JMSException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        messageReceiverGateway.setListener(new MessageListener() {
+            @Override
+            public void onMessage(Message message) {
+                try {
+                    String messageContent = ((TextMessage)message).getText();
+
+                    TravelRefundReply travelRefundReply = gson.fromJson(messageContent, TravelRefundReply.class);
+
+                    if (travelRefundReplyListener != null) {
+                        TravelRefundRequest originalRequest = cache.get(message.getJMSCorrelationID());
+                        travelRefundReplyListener.onReplyReceived(travelRefundReply, originalRequest);
+                    }
+                } catch (JMSException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
-    // Requires an interface that will be called when a reply is received.
-    public void setReplyListener() {
-
+    public void setReplyListener(TravelRefundReplyListener travelRefundReplyListener) {
+        this.travelRefundReplyListener = travelRefundReplyListener;
     }
 
     public void applyForRefund(TravelRefundRequest travelRefundRequest) {

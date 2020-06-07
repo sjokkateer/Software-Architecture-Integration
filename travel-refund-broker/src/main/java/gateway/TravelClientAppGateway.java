@@ -1,5 +1,7 @@
 package gateway;
 
+import approval.model.ApprovalReply;
+import client.model.TravelRefundReply;
 import client.model.TravelRefundRequest;
 import com.google.gson.Gson;
 
@@ -10,11 +12,12 @@ public class TravelClientAppGateway {
     private Gson gson = new Gson();
 
     private ConcreteMessageReceiverGateway messageReceiverGatewayClient;
-
     private TravelRequestListener travelRequestListener;
 
     // Is used to determine the destination queue to return back to, based on message/correlationId
-    HashMap<String, Destination> messageIdReturnAddress;
+    private HashMap<String, Destination> messageIdReturnAddress;
+
+    private MessageSenderDynamicQueue messageSenderGateway;
 
     public TravelClientAppGateway() {
         messageIdReturnAddress = new HashMap<>();
@@ -38,22 +41,24 @@ public class TravelClientAppGateway {
             }
         });
 
-        // messageSenderGatewayClient = new MessageSenderGateway("travel-refund-broker-request");
+        messageSenderGateway = new MessageSenderDynamicQueue("irrelevant");
     }
 
     public void setTravelRequestListener(TravelRequestListener travelRequestListener) {
         this.travelRequestListener = travelRequestListener;
     }
 
-//    public void sendLoanReply(String originalLoanRequestId, BankInterestReply interestReply) {
-//        try {
-//            LoanReply loanReply = new LoanReply(interestReply.getId(), interestReply.getInterest(), interestReply.getBankId());
-//            String lrJSON = gson.toJson(loanReply);
-//            Message message = messageSenderGatewayClient.createTextMessage(lrJSON);
-//            message.setJMSCorrelationID(originalLoanRequestId);
-//            messageSenderGatewayClient.send(message);
-//        } catch (JMSException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void sendReply(TravelRefundReply travelRefundReply, String correlationId) {
+        try {
+            String travelRefundReplyJson = gson.toJson(travelRefundReply);
+
+            Message message = messageSenderGateway.createTextMessage(travelRefundReplyJson);
+            message.setJMSCorrelationID(correlationId);
+
+            Destination destination = messageIdReturnAddress.get(correlationId);
+            messageSenderGateway.send(destination, message);
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
+    }
 }

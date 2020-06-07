@@ -2,6 +2,7 @@ package gui;
 
 import approval.model.ApprovalReply;
 import approval.model.ApprovalRequest;
+import client.model.TravelRefundReply;
 import client.model.TravelRefundRequest;
 import gateway.ApprovalReplyListener;
 import gateway.TravelApprovalAppGateway;
@@ -49,7 +50,9 @@ public class TravelRefundBrokerController {
                 }
 
                 // Forwards the reply to the client through the client app gateway.
-
+                double costs = 0.0;
+                TravelRefundReply travelRefundReply = new TravelRefundReply(approvalReply.isApproved(), approvalReply.getReasonRejected(), costs);
+                travelClientAppGateway.sendReply(travelRefundReply, correlationId);
             }
         });
     }

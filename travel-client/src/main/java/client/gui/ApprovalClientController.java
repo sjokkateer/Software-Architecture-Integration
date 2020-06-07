@@ -1,8 +1,10 @@
 package client.gui;
 
 import client.TravelClientAppGateway;
+import client.TravelRefundReplyListener;
 import client.model.Address;
 import client.model.ClientTravelMode;
+import client.model.TravelRefundReply;
 import client.model.TravelRefundRequest;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,6 +15,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 public class ApprovalClientController implements Initializable {
@@ -53,6 +56,17 @@ public class ApprovalClientController implements Initializable {
         jcbModeItemStateChanged();
 
         travelClientAppGateway = new TravelClientAppGateway();
+        travelClientAppGateway.setReplyListener(new TravelRefundReplyListener() {
+            @Override
+            public void onReplyReceived(TravelRefundReply travelRefundReply, TravelRefundRequest travelRefundRequest) {
+                ClientListLine rr = getRequestReply(travelRefundRequest);
+
+                if (rr != null) {
+                    rr.setReply(travelRefundReply);
+                    lvRequestReply.refresh();
+                }
+            }
+        });
     }
 
     private ClientListLine getRequestReply(TravelRefundRequest request) {
