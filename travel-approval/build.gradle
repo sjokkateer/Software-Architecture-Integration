@@ -69,3 +69,25 @@ run {
     }
 }
 
+// code below creates approvalModel.jar with classes from package approval/model/*
+// and copies approvalModel.jar to the lib folder in Broker.
+ext {
+    modelPackage = 'approval/model/*' // package from which the .jar file will be created
+    modelJarName = "approvalModel.jar" // name of the .jar file
+    modelSourcePath = "${buildDir}/libs/" + modelJarName // absolute path of created .jar file
+    modelDestPath = "${rootProject.projectDir}/travel-refund-broker/lib/" // path of the LIB folder in broker application
+}
+
+task createModelJar(type: Jar, dependsOn: compileJava) {
+    archiveName = modelJarName
+    from sourceSets.main.output
+    include modelPackage
+    print 'created ' + modelSourcePath + ' with classes from ' + modelPackage
+}
+
+task copyModelJarToBroker(type: Copy,dependsOn:[createModelJar]) {
+    from modelSourcePath
+    into modelDestPath
+    print 'copied '+ modelSourcePath + ' into ' + modelDestPath
+}
+
