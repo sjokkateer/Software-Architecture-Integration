@@ -16,7 +16,6 @@ public class TravelRefundBrokerController {
 
     private TravelRefundContentEnricher travelRefundContentEnricher;
 
-    //
     private TravelApprovalAppGateway travelApprovalAppGateway;
     private ApprovalReplyListener approvalReplyListener;
 
@@ -27,10 +26,12 @@ public class TravelRefundBrokerController {
         travelClientAppGateway.setTravelRequestListener(new TravelRequestListener() {
             @Override
             public void onRequestReceived(TravelRefundRequest travelRefundRequest, String originalMessageId) {
-                ApprovalRequest approvalRequest = travelRefundContentEnricher.enrich(travelRefundRequest);
+                travelRefundRequest = travelRefundContentEnricher.enrich(travelRefundRequest);
 
                 // Need to forward to recepient list that should determine to which queue(s) the approvalRequest is sent
+
                 // For now with one travel approval application (INTERNSHIP) which is always to be involved.
+                ApprovalRequest approvalRequest = new ApprovalRequest(travelRefundRequest.getTeacher(), travelRefundRequest.getStudent(), travelRefundRequest.getCosts());
                 travelApprovalAppGateway.sendApprovalRequest(approvalRequest, originalMessageId);
 
                 if (travelRequestListener != null) {
