@@ -16,7 +16,7 @@ application {
 }
 
 dependencies {
-
+    compile files(fileTree(dir: 'lib', includes: ['*.jar']))
 }
 
 jar {

@@ -1,19 +1,26 @@
 package gateway;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 
 public class MessageSenderGateway extends GatewayBase {
     protected MessageProducer producer;
-
+    protected String queueName;
     public MessageSenderGateway(String queueName) {
-        super(queueName);
+        super();
+        this.queueName = queueName;
+    }
+
+    @Override
+    protected Destination createQueue() throws JMSException {
+        return session.createQueue(queueName);
     }
 
     @Override
     protected void doClassSpecificSetup() throws JMSException {
-        destinationQueue = session.createQueue(queueName);
+        destinationQueue = createQueue();
         producer = session.createProducer(destinationQueue);
     }
 

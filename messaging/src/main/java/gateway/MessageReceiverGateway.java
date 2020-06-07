@@ -4,16 +4,12 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 
-public class MessageReceiverGateway extends GatewayBase {
+abstract public class MessageReceiverGateway extends GatewayBase {
     private MessageConsumer consumer;
-
-    public MessageReceiverGateway(String queueName) {
-        super(queueName);
-    }
 
     @Override
     protected void doClassSpecificSetup() throws JMSException {
-        destinationQueue = session.createQueue(queueName);
+        destinationQueue = createQueue();
         consumer = session.createConsumer(destinationQueue);
 
         connection.start();

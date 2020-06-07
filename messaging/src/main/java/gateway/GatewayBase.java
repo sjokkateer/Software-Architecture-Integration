@@ -13,10 +13,8 @@ abstract public class GatewayBase {
     protected Connection connection;
     protected Session session;
     protected Destination destinationQueue;
-    protected String queueName;
 
-    public GatewayBase(String queueName) {
-        this.queueName = queueName;
+    public GatewayBase() {
         ConnectionFactory factory = new ActiveMQConnectionFactory(BROKER_URL);
 
         try {
@@ -30,6 +28,7 @@ abstract public class GatewayBase {
         }
     }
 
+    protected abstract Destination createQueue() throws JMSException;
     protected abstract void doClassSpecificSetup() throws JMSException;
 
     public void closeConnections() {
