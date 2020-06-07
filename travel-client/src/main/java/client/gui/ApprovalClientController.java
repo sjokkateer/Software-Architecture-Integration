@@ -1,5 +1,6 @@
 package client.gui;
 
+import client.TravelClientAppGateway;
 import client.model.Address;
 import client.model.ClientTravelMode;
 import client.model.TravelRefundRequest;
@@ -40,6 +41,7 @@ public class ApprovalClientController implements Initializable {
     @FXML
     private ListView<ClientListLine> lvRequestReply;
 
+    private TravelClientAppGateway travelClientAppGateway;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -49,6 +51,8 @@ public class ApprovalClientController implements Initializable {
         );
         cbTravelMode.getSelectionModel().select(0);
         jcbModeItemStateChanged();
+
+        travelClientAppGateway = new TravelClientAppGateway();
     }
 
     private ClientListLine getRequestReply(TravelRefundRequest request) {
@@ -104,5 +108,6 @@ public class ApprovalClientController implements Initializable {
         lvRequestReply.getItems().add(new ClientListLine(request, null));
 
         //@TODO: send the TravelRefundRequest
+        travelClientAppGateway.applyForRefund(request);
     }
 }

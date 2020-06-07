@@ -13,8 +13,10 @@ abstract public class GatewayBase {
     protected Connection connection;
     protected Session session;
     protected Destination destinationQueue;
+    protected String queueName;
 
-    public GatewayBase() {
+    public GatewayBase(String queueName) {
+        this.queueName = queueName;
         ConnectionFactory factory = new ActiveMQConnectionFactory(BROKER_URL);
 
         try {

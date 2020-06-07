@@ -7,10 +7,9 @@ import javax.jms.MessageProducer;
 
 public class MessageSenderGateway extends GatewayBase {
     protected MessageProducer producer;
-    protected String queueName;
+
     public MessageSenderGateway(String queueName) {
-        super();
-        this.queueName = queueName;
+        super(queueName);
     }
 
     @Override

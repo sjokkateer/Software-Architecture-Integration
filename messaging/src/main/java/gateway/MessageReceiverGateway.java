@@ -7,6 +7,10 @@ import javax.jms.MessageListener;
 abstract public class MessageReceiverGateway extends GatewayBase {
     private MessageConsumer consumer;
 
+    public MessageReceiverGateway(String queueName) {
+        super(queueName);
+    }
+
     @Override
     protected void doClassSpecificSetup() throws JMSException {
         destinationQueue = createQueue();

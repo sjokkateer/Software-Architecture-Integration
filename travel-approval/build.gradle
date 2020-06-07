@@ -22,6 +22,8 @@ application {
 }
 
 dependencies {
+    compile 'com.google.code.gson:gson:2.8.6'
+    compile group: 'org.apache.activemq', name: 'activemq-client', version: '5.15.12'
     compile files(fileTree(dir: 'lib', includes: ['*.jar']))
 }
 
