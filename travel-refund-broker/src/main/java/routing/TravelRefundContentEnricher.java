@@ -17,7 +17,9 @@ public class TravelRefundContentEnricher {
             case CAR:
                 Response response = client.getServiceTarget().path("priceperkm/rest/price").request().accept(MediaType.TEXT_PLAIN).get();
                 Double price = response.readEntity(Double.class);
-                travelRefundRequest.setCosts(price);
+                // Since it is price per km, calculate total and assign it.
+                double costs = price * travelRefundRequest.getKilometers();
+                travelRefundRequest.setCosts(costs);
                 break;
             default:
                 break;

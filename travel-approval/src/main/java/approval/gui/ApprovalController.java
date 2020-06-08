@@ -52,13 +52,13 @@ public class ApprovalController implements Initializable {
             name = approvalName;
         }
 
-        ApprovalReply reply = new ApprovalReply(approved,name);
+        ApprovalReply reply = new ApprovalReply(approved, name);
         if (rr!= null){
             rr.setReply(reply);
             lvRequestReply.refresh();
             ApprovalRequest request = rr.getRequest();
 
-            // @TODO: send reply for the selected request
+            // send reply for the selected request
             travelApprovalAppGateway.sendApprovalReply(reply, request.getId());
         }
     }

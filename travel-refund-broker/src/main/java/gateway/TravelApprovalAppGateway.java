@@ -2,55 +2,40 @@ package gateway;
 
 import approval.model.ApprovalReply;
 import approval.model.ApprovalRequest;
-import com.google.gson.Gson;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import routing.Aggregation;
+import routing.Aggregator;
+import routing.RecipientList;
 
 public class TravelApprovalAppGateway {
-    private Gson gson = new Gson();
-
-    private MessageSenderGateway senderGateway;
-    private ConcreteMessageReceiverGateway receiverGateway;
+    private RecipientList recipientList;
+    private Aggregator aggregator;
 
     private ApprovalReplyListener approvalReplyListener;
 
     public TravelApprovalAppGateway() {
-        senderGateway = new MessageSenderGateway("administrationRequestQueue");
-        receiverGateway = new ConcreteMessageReceiverGateway("travel-refund-broker-reply");
+        recipientList = new RecipientList();
 
-        receiverGateway.setListener(new MessageListener() {
+        aggregator = new Aggregator();
+        aggregator.setApprovalReplyListener(new ApprovalReplyListener() {
             @Override
-            public void onMessage(Message message) {
-                try {
-                    String messageContent = ((TextMessage)message).getText();
-                    ApprovalReply approvalReply = gson.fromJson(messageContent, ApprovalReply.class);
-
-                    if (approvalReplyListener != null) {
-                        approvalReplyListener.onReplyReceived(approvalReply, message.getJMSCorrelationID());
-                    }
-                } catch (JMSException e) {
-                    e.printStackTrace();
+            // Officially it's not just on reply anymore, but a little more complex.
+            public void onReplyReceived(ApprovalReply approvalReply, String correlationId) {
+                if (approvalReplyListener != null) {
+                    approvalReplyListener.onReplyReceived(approvalReply, correlationId);
                 }
             }
         });
     }
 
     public void sendApprovalRequest(ApprovalRequest approvalRequest, String messageId) {
-        String jsonAR = gson.toJson(approvalRequest, ApprovalRequest.class);
-        Message message = senderGateway.createTextMessage(jsonAR);
+        // Pass the responsibility of message related activities to the recipient list.
+        Aggregation aggregation = recipientList.send(approvalRequest, messageId);
 
-        try {
-            message.setJMSCorrelationID(messageId);
-        } catch (JMSException e) {
-            e.printStackTrace();
-        }
-
-        senderGateway.send(message);
+        // Pass the required information to the aggregator.
+        aggregator.add(aggregation);
     }
 
+    // ApprvalReplyListener should now be handled by the aggregator.
     public void setApprovalReplyListener(ApprovalReplyListener approvalReplyListener) {
         this.approvalReplyListener = approvalReplyListener;
     }
