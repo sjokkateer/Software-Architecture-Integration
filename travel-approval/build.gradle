@@ -60,6 +60,14 @@ task runINTERSHIP_ADMIN(type: JavaExec) {
     args "administrationRequestQueue", "Internship Administration"
 }
 
+task runTHIRD_RANDOM(type: JavaExec) {
+    classpath sourceSets.main.runtimeClasspath
+    //if you have error message about missing modules in java FX, uncomment this line:
+    // jvmArgs = ['--module-path', classpath.asPath,'--add-modules', 'javafx.controls,javafx.fxml']
+    main = mainClassName
+    args "thirdRandomQueue", "THIRD RANDOM"
+}
+
 /**
  * To create IntelliJ run 3 configurations as Gradle run task add as Arguments:
  * -PappArgs="['financeRequestQueue', 'Financial Department']"
