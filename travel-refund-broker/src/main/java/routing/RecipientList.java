@@ -9,6 +9,9 @@ import javax.jms.Message;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class is responsible for sending the Approval Requests to the right queue's
+ */
 public class RecipientList {
     private static final String AGGREGATION_PROPERTY = "aggregationID";
 
@@ -18,6 +21,21 @@ public class RecipientList {
         ruleBasedSenders = RuleBasedSender.loadFromFile();
     }
 
+    /**
+     * Takes in an ApprovalRequest object and message id.
+     * Will format a message with ApprovalRequest content, and
+     * hand it over to the RuleBasedSender for actual sending.
+     *
+     * When true obtained, this means the message was send and
+     * the nymberOfMessagesSent is incremented.
+     *
+     * Ultimately the method returns an aggregation object that
+     * holds administration details as aggregation id and number of messages sent.
+     *
+     * @param approvalRequest
+     * @param messageId
+     * @return
+     */
     public Aggregation send(ApprovalRequest approvalRequest, String messageId) {
         Gson gson = new Gson();
         String jsonAR = gson.toJson(approvalRequest, ApprovalRequest.class);

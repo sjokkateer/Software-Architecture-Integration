@@ -56,6 +56,7 @@ public class ApprovalClientController implements Initializable {
         jcbModeItemStateChanged();
 
         travelClientAppGateway = new TravelClientAppGateway();
+        // Set listener on what code to execute when a travel refund reply is received.
         travelClientAppGateway.setReplyListener(new TravelRefundReplyListener() {
             @Override
             public void onReplyReceived(TravelRefundReply travelRefundReply, TravelRefundRequest travelRefundRequest) {
@@ -121,7 +122,7 @@ public class ApprovalClientController implements Initializable {
         // add the TravelRefundRequest to lvRequestReply
         lvRequestReply.getItems().add(new ClientListLine(request, null));
 
-        //@TODO: send the TravelRefundRequest
+        // send the TravelRefundRequest
         travelClientAppGateway.applyForRefund(request);
     }
 }

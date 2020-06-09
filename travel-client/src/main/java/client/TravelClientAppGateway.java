@@ -12,6 +12,9 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import java.util.HashMap;
 
+/**
+ * Gateway that is responsible for handling the travel client side of travel client system.
+ */
 public class TravelClientAppGateway {
     private MessageSenderGateway messageSenderGateway;
     // This is a gateway class, but will use temporary queues for return address pattern.
@@ -25,6 +28,7 @@ public class TravelClientAppGateway {
         messageSenderGateway = new MessageSenderGateway("travel-refund-broker-request");
 
         messageReceiverGateway = new MessageReceiverDynamicQueue();
+        // A listener called when a travel refund reply is received.
         messageReceiverGateway.setListener(new MessageListener() {
             @Override
             public void onMessage(Message message) {
@@ -44,10 +48,21 @@ public class TravelClientAppGateway {
         });
     }
 
+    /**
+     * Sets a listener which is called when a travel refund reply is received.
+     *
+     * @param travelRefundReplyListener
+     */
     public void setReplyListener(TravelRefundReplyListener travelRefundReplyListener) {
         this.travelRefundReplyListener = travelRefundReplyListener;
     }
 
+    /**
+     * Method is used to apply for refunds, which handles of the conversion of a travel
+     * refund request into a message and send it off.
+     *
+     * @param travelRefundRequest
+     */
     public void applyForRefund(TravelRefundRequest travelRefundRequest) {
         String trr = gson.toJson(travelRefundRequest, TravelRefundRequest.class);
         Message msg = messageSenderGateway.createTextMessage(trr);

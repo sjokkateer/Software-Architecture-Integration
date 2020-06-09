@@ -8,6 +8,9 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import java.net.URI;
 
+/**
+ * Class responsible for making http calls to for example rest services.
+ */
 public class HttpClient {
     private String protocol;
     private String host;
@@ -15,6 +18,14 @@ public class HttpClient {
 
     private WebTarget serviceTarget;
 
+    /**
+     * Constructor will do all the basic set up such that
+     * a user can obtain a service target and make a request.
+     *
+     * @param protocol
+     * @param host
+     * @param port
+     */
     public HttpClient(String protocol, String host, int port) {
         this.protocol = protocol;
         this.host = host;

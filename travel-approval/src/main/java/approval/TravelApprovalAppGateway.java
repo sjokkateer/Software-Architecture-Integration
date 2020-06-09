@@ -12,6 +12,10 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import java.util.HashMap;
 
+/**
+ * Gateway that is responsible for handling the travel approval side of the
+ * travel approval system.
+ */
 public class TravelApprovalAppGateway {
     private Gson gson = new Gson();
 
@@ -29,6 +33,7 @@ public class TravelApprovalAppGateway {
 
         messageReceiverGateway = new ConcreteMessageReceiverGateway(queueName);
 
+        // Is called when a new approval request is obtained.
         messageReceiverGateway.setListener(new MessageListener() {
             @Override
             public void onMessage(Message message) {
@@ -37,9 +42,9 @@ public class TravelApprovalAppGateway {
                     ApprovalRequest approvalRequest = gson.fromJson(messageContent, ApprovalRequest.class);
 
                     String correlationId = message.getJMSCorrelationID();
+                    // Stores the aggregation id under the correlation id to be used later (aggregation id) when sending a reply
                     idToAggregationId.put(correlationId, message.getIntProperty(AGGREGATION_PROPERTY));
 
-                    // Use the correlation id as id for the object such that we can communicate back to the broker.
                     approvalRequest.setId(correlationId);
 
                     if (approvalRequestListener != null) {
@@ -54,10 +59,21 @@ public class TravelApprovalAppGateway {
         messageSenderGateway = new MessageSenderGateway("travel-refund-broker-reply");
     }
 
+    /**
+     * Sets a listener to be called when an approval request is obtained.
+     *
+     * @param approvalRequestListener
+     */
     public void setApprovalRequestListener(ApprovalRequestListener approvalRequestListener) {
         this.approvalRequestListener = approvalRequestListener;
     }
 
+    /**
+     * Method used to send approval reply objects back to the broker, including additional message setup.
+     *
+     * @param reply
+     * @param correlationId
+     */
     public void sendApprovalReply(ApprovalReply reply, String correlationId) {
         try {
             String replyJson = gson.toJson(reply);

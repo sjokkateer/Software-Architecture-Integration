@@ -34,34 +34,56 @@ public class TravelRefundBrokerApp extends JFrame {
 
         controller = new TravelRefundBrokerController();
 
+        // Adds a listener to controller with instructions on what code to execute
+        // when receiving a request.
         controller.setTravelRequestListener(new TravelRequestListener() {
             @Override
             public void onRequestReceived(TravelRefundRequest travelRefundRequest, String originalMessageId) {
-                updateRefundRequest(travelRefundRequest, originalMessageId);
+                updateRefundRequestReply(travelRefundRequest, originalMessageId);
             }
         });
 
+        // Adds a listener to controller with instructions on what code to execute
+        // when receiving a reply.
         controller.setApprovalReplyListener(new ApprovalReplyListener() {
             @Override
             public void onReplyReceived(ApprovalReply approvalReply, String correlationId) {
-                updateRefundRequest(approvalReply, correlationId);
+                updateRefundRequestReply(approvalReply, correlationId);
             }
         });
     }
 
-    public void updateRefundRequest(TravelRefundRequest travelRefundRequest, String originalMessageId) {
+    /**
+     * Updates a refund request reply object with the obtained travel refund request object.
+     *
+     * @param travelRefundRequest
+     * @param originalMessageId
+     */
+    public void updateRefundRequestReply(TravelRefundRequest travelRefundRequest, String originalMessageId) {
         RefundRequestReply refundRequestReply = new RefundRequestReply(travelRefundRequest);
         cache.put(originalMessageId, refundRequestReply);
         refundRequestReplyListModel.addElement(refundRequestReply);
     }
 
-    public void updateRefundRequest(ApprovalReply approvalReply, String correlationId) {
+    /**
+     * Updates a refund request reply object with the obtained travel refund request object.
+     *
+     * @param approvalReply
+     * @param correlationId
+     */
+    public void updateRefundRequestReply(ApprovalReply approvalReply, String correlationId) {
         RefundRequestReply refundRequestReply = cache.get(correlationId);
         refundRequestReply.setApprovalReply(approvalReply);
+        // Updates the GUI after receiving a reply.
         applicationPanel.repaint();
         applicationPanel.revalidate();
     }
 
+    /**
+     * Sets up the application GUI with a specific title, size and location.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         TravelRefundBrokerApp travelRefundBrokerApp = new TravelRefundBrokerApp("Travel Refund Broker Application");
         travelRefundBrokerApp.setSize(travelRefundBrokerApp.WIDTH, travelRefundBrokerApp.HEIGHT);

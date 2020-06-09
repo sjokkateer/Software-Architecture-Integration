@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Class is responsible for evaluating rules related to the queue
+ * and sending a message accordingly.
+ */
 public class RuleBasedSender {
     private static final String RESOURCE_FOLDER = "/travel-refund-broker/src/main/resources";
     private static final String RULE_FILE = "rules.txt";
@@ -24,6 +28,15 @@ public class RuleBasedSender {
         this.rule = rule;
     }
 
+    /**
+     * Will evaluate the objects corresponding rule,
+     * if the rule evaluates to true the message is send and true is returned.
+     * False otherwise.
+     *
+     * @param costs
+     * @param message
+     * @return
+     */
     public boolean send(double costs, Message message) {
         String argument = " costs = " + costs;
 
@@ -42,6 +55,16 @@ public class RuleBasedSender {
         return gateway.createTextMessage(content);
     }
 
+    /**
+     * Method responsible for loading the text file in the resource folder.
+     * This text file contains rules and related queue names.
+     *
+     * Method will create a corresponding object for each line and add them to a collection.
+     *
+     * Ultimately returning a collection of rule based senders.
+     *
+     * @return
+     */
     public static List<RuleBasedSender> loadFromFile() {
         String pathToFiles = System.getProperty("user.dir");
         List<RuleBasedSender> ruleBasedSenders = new ArrayList<>();

@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Class responsible for aggregating messages and managing when an event should be triggered,
+ * indicating all messages are aggregated.
+ */
 public class Aggregator {
     private static final String AGGREGATION_PROPERTY = "aggregationID";
 
@@ -31,6 +35,7 @@ public class Aggregator {
 
         receiverGateway = new ConcreteMessageReceiverGateway("travel-refund-broker-reply");
 
+        // Listener that will be executed when an approval reply is received.
         receiverGateway.setListener(new MessageListener() {
             @Override
             public void onMessage(Message message) {
@@ -38,16 +43,17 @@ public class Aggregator {
                     String messageContent = ((TextMessage)message).getText();
                     ApprovalReply approvalReply = gson.fromJson(messageContent, ApprovalReply.class);
 
+                    // Get the aggregation data and process it
                     int aggregationId = message.getIntProperty(AGGREGATION_PROPERTY);
                     int numberOfApprovalReplies = addApprovalReply(approvalReply, aggregationId);
                     int numberOfMessagesSent = aggregations.get(aggregationId);
 
+                    // Once we received all replies we were supposed to aggregate we invoke the event.
                     if (numberOfApprovalReplies == numberOfMessagesSent) {
-                        // Create new approval.
+                        // Create a new reply based on set rules.
                         ApprovalReply finalReply = createApprovalReply(aggregationId);
-                        // Inform our listener that it's time.
                         if (approvalReplyListener != null) {
-                            // All messages should have the same correlation id by our logic.
+                            // Provide the listener with the new reply and correlation id for processing.
                             approvalReplyListener.onReplyReceived(finalReply, message.getJMSCorrelationID());
                         }
                     }
@@ -58,6 +64,16 @@ public class Aggregator {
         });
     }
 
+    /**
+     * Creates a new approval reply with the information of all received approval replies
+     * according to specification.
+     *
+     * If rejected: List application that rejected the request.
+     * If Approved: Leave rejection reason empty.
+     *
+     * @param aggregationId
+     * @return
+     */
     private ApprovalReply createApprovalReply(int aggregationId) {
         List<ApprovalReply> approvalReplies = aggregatedApprovals.get(aggregationId);
 
@@ -65,6 +81,7 @@ public class Aggregator {
         boolean first = true;
 
         for (ApprovalReply approvalReply: approvalReplies) {
+            //
             if (!first && !approvalReply.isApproved()) {
                 boolean isApproved = newReply.isApproved() && approvalReply.isApproved();
 
@@ -72,19 +89,23 @@ public class Aggregator {
 
                 String reasonRejected = newReply.getReasonRejected();
 
+                // Adds a separation symbol if the current reply contains a rejection.
                 if (!reasonRejected.equals("")) {
                     reasonRejected += " & ";
                 }
 
+                // Adds the reason for rejection, either empty string or actual reason.
                 reasonRejected += approvalReply.getReasonRejected();
 
+                // Sets the compounded reason for rejection on the new reply.
+                // this is thus every app that rejected the request.
                 newReply.setReasonRejected(reasonRejected);
             }
 
             // Always take the data of the first reply in the collection.
             if (first) {
                 newReply.setApproved(approvalReply.isApproved());
-                // Assuming that reason rejected will always be empty if approved was true.
+
                 newReply.setReasonRejected(approvalReply.getReasonRejected());
                 first = false;
             }
@@ -93,7 +114,15 @@ public class Aggregator {
         return newReply;
     }
 
-    // returns the number of items in the list.
+    /**
+     * Adds an approval reply to the collection of received approval replies for aggregation id.
+     *
+     * Returns the size of the collection of received approval replies.
+     *
+     * @param approvalReply
+     * @param aggregationId
+     * @return
+     */
     private int addApprovalReply(ApprovalReply approvalReply, int aggregationId) {
         List<ApprovalReply> approvalReplies = aggregatedApprovals.getOrDefault(aggregationId, new ArrayList<>());
         approvalReplies.add(approvalReply);
@@ -102,17 +131,20 @@ public class Aggregator {
         return approvalReplies.size();
     }
 
+    /**
+     * Adds an aggregation object to the hashmap.
+     * @param aggregation
+     */
     public void add(Aggregation aggregation) {
         aggregations.put(aggregation.getAggregationId(), aggregation.getNumberOfMessages());
     }
 
+    /**
+     * Sets a listener that will be called once the condition: number of messages aggregated
+     * is equal to the number of sent messages is met.
+     * @param approvalReplyListener
+     */
     public void setApprovalReplyListener(ApprovalReplyListener approvalReplyListener) {
         this.approvalReplyListener = approvalReplyListener;
     }
-
-    // then on receival of reply add the approval to the list and match the count of the approvals
-    // versus the number in aggregations.
-
-    // Once this number matches we could notify the controller to get our newly formed approval and do something with it.
-
 }
